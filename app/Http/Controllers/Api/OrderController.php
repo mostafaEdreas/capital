@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Validation\ValidationException;
-
+use Illuminate\Support\Facades\Cache;
 class OrderController extends Controller
 {
     public function __construct(
@@ -44,6 +44,11 @@ class OrderController extends Controller
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Throwable $e) {
+            $lock = config('app.idempotency_lock');
+    
+            if ($lock) {
+                $lock->release();
+            }
             if (config('app.debug')) {
                 throw $e;
             }

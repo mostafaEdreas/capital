@@ -11,6 +11,8 @@ use App\Services\IngredientService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
@@ -41,7 +43,6 @@ class OrderController extends Controller
         return view('orders.create', $data);
     }
 
-
     public function store(OrderRequest $request): RedirectResponse
     {
         try {
@@ -50,10 +51,17 @@ class OrderController extends Controller
             return redirect()
                 ->route('orders.show', $order->id)
                 ->with('success', 'Order created successfully.');
-        } catch (\Exception $e) {
-            if(config('app.debug')) {
+            } catch (ValidationException $e) {
                 throw $e;
-            }
+            } catch (\Throwable $e) {
+                $lock = config('app.idempotency_lock');
+        
+                if ($lock) {
+                    $lock->release();
+                }
+                if (config('app.debug')) {
+                    throw $e;
+                }
             return back()
                 ->withInput()
                 ->withErrors('Creation failed: Please try again.');
