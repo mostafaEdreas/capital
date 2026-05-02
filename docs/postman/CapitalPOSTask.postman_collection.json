@@ -1,0 +1,182 @@
+{
+  "info": {
+    "name": "CapitalPOSTask API",
+    "description": "Orders API (no auth).\n\n**Variables:** `baseUrl`, `orderId`.\n\n**Registered routes (matches `routes/api.php`):** `GET/POST /api/orders`, `GET /api/orders/{id}`, `POST` status: `processing`, `complete`, `cancel`. There is **no** `PUT`/`PATCH`/`DELETE` for orders.\n\n**Middleware `prevent-duplicate-request`:** on the `apiResource` (index, show, store). If you send `idempotency_key` in the JSON body, duplicate requests with the same key within the lock window return `400` with a message.\n\n**Content-Type:** `application/json` for `POST` bodies.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "orderId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "description": "`GET api/orders` — paginated list."
+          }
+        },
+        {
+          "name": "Create order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idempotency_key\": \"optional-unique-string-to-dedupe-posts\",\n  \"items\": [\n    {\n      \"bottle_id\": 1,\n      \"bottle_quantity\": 2,\n      \"ingredients\": [\n        {\n          \"ingredient_id\": 1,\n          \"ingredient_type_id\": 1,\n          \"sold_quantity_grams\": 50\n        }\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "description": "`POST api/orders` — `201` on success. Remove `idempotency_key` if you do not need deduplication (middleware ignores it when absent)."
+          }
+        },
+        {
+          "name": "Show order",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{orderId}}"
+              ]
+            },
+            "description": "`GET api/orders/{order}`."
+          }
+        },
+        {
+          "name": "Status: processing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/processing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{orderId}}",
+                "processing"
+              ]
+            },
+            "description": "`POST api/orders/{order}/processing`."
+          }
+        },
+        {
+          "name": "Status: complete",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{orderId}}",
+                "complete"
+              ]
+            },
+            "description": "`POST api/orders/{order}/complete`."
+          }
+        },
+        {
+          "name": "Status: cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{orderId}}",
+                "cancel"
+              ]
+            },
+            "description": "`POST api/orders/{order}/cancel`."
+          }
+        }
+      ]
+    }
+  ]
+}

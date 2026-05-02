@@ -1,0 +1,72 @@
+
+services:
+  # App Service (PHP)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: capital-app
+    container_name: capital-app
+    restart: unless-stopped
+    depends_on:
+      - db
+    volumes:
+      - .:/var/www
+    networks:
+      - capital-network
+
+  # Database Service (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: capital-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: capital
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      # Exposed on 3308 to avoid conflict with other MySQL instances
+      - "3309:3306" 
+    volumes:
+      - capital_dbdata:/var/lib/mysql
+    networks:
+      - capital-network
+
+  # Web Service (Nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: capital-nginx
+    restart: unless-stopped
+    ports:
+     
+      - "8002:80"
+    volumes:
+      - .:/var/www
+      - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - capital-network
+    depends_on:
+      - app
+
+  # phpMyAdmin Service
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: capital-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      # Exposed on 8081 to avoid conflict with other tools
+      - "8082:80"
+    networks:
+      - capital-network
+    depends_on:
+      - db
+
+networks:
+  capital-network:
+    driver: bridge
+
+volumes:
+  capital_dbdata:
